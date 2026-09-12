@@ -1,6 +1,7 @@
 import { useEffect, useState } from "react";
+import "./Admin.css";
 
-interface Inquiry {
+type Inquiry = {
   id: number;
   name: string;
   email: string;
@@ -10,31 +11,29 @@ interface Inquiry {
   message: string;
   status: string;
   createdAt: string;
-}
+};
 
-function AdminDashboard() {
+const API_URL = import.meta.env.VITE_API_URL;
+
+const statuses = ["NEW", "CONTACTED", "IN_PROGRESS", "COMPLETED"];
+
+export default function AdminDashboard() {
   const [inquiries, setInquiries] = useState<Inquiry[]>([]);
   const [loading, setLoading] = useState(true);
 
-  const token = localStorage.getItem(
-    "siteique_token"
-  );
+  const token = localStorage.getItem("siteique_token");
 
   const fetchInquiries = async () => {
     try {
-      const response = await fetch(`${import.meta.env.VITE_API_URL}/api/inquiries`, {
-          headers: {
-            Authorization: `Bearer ${token}`,
-          },
-        }
-      );
+      const response = await fetch(`${API_URL}/api/inquiries`, {
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      });
 
-      if (!response.ok) {
-        throw new Error("Failed to fetch inquiries");
-      }
+      if (!response.ok) throw new Error("Failed to fetch inquiries");
 
       const data = await response.json();
-
       setInquiries(data);
     } catch (error) {
       console.error(error);
@@ -47,24 +46,24 @@ function AdminDashboard() {
     fetchInquiries();
   }, []);
 
-  const updateStatus = async (
-    id: number,
-    status: string
-  ) => {
+  const updateStatus = async (id: number, status: string) => {
     try {
-      await fetch(`${import.meta.env.VITE_API_URL}/api/inquiries/${id}`, {
-          method: "PATCH",
-          headers: {
-            "Content-Type": "application/json",
-            Authorization: `Bearer ${token}`,
-          },
-          body: JSON.stringify({
-            status,
-          }),
-        }
-      );
+      const response = await fetch(`${API_URL}/api/inquiries/${id}`, {
+        method: "PATCH",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${token}`,
+        },
+        body: JSON.stringify({ status }),
+      });
 
-      fetchInquiries();
+      if (!response.ok) throw new Error("Failed to update status");
+
+      setInquiries((current) =>
+        current.map((inquiry) =>
+          inquiry.id === id ? { ...inquiry, status } : inquiry
+        )
+      );
     } catch (error) {
       console.error(error);
     }
@@ -72,207 +71,211 @@ function AdminDashboard() {
 
   const logout = () => {
     localStorage.removeItem("siteique_token");
-    window.location.reload();
+    window.location.href = "/admin/login";
   };
 
   const total = inquiries.length;
-
-  const newCount = inquiries.filter(
-    (item) => item.status === "NEW"
+  const newCount = inquiries.filter((i) => i.status === "NEW").length;
+  const contacted = inquiries.filter(
+    (i) => i.status === "CONTACTED"
+  ).length;
+  const completed = inquiries.filter(
+    (i) => i.status === "COMPLETED"
   ).length;
 
-  const contactedCount = inquiries.filter(
-    (item) => item.status === "CONTACTED"
-  ).length;
-
-  const completedCount = inquiries.filter(
-    (item) => item.status === "COMPLETED"
-  ).length;
-
-  if (loading) {
-    return (
-      <div className="container py-5">
-        Loading dashboard...
-      </div>
-    );
-  }
+  const getStatusClass = (status: string) => {
+    switch (status) {
+      case "NEW":
+        return "status-new";
+      case "CONTACTED":
+        return "status-contacted";
+      case "IN_PROGRESS":
+        return "status-progress";
+      case "COMPLETED":
+        return "status-completed";
+      default:
+        return "status-new";
+    }
+  };
 
   return (
-    <div className="container py-5">
+    <main className="admin-page">
+      <div className="admin-shell">
 
-      {/* Header */}
+        <header className="admin-header">
+          <div>
+            <div className="admin-brand">
+              <span className="admin-dot" />
+              <span className="admin-brand-name">SITEIQUE</span>
+            </div>
 
-      <div className="d-flex justify-content-between align-items-center mb-5">
-        <div>
-          <p className="text-muted mb-1">
-            SITEIQUE
+            <p className="admin-private">
+              Private studio console
+            </p>
+          </div>
+
+          <button
+            onClick={logout}
+            className="admin-logout"
+          >
+            Logout
+          </button>
+        </header>
+
+        <section className="admin-intro">
+          <p className="admin-eyebrow">
+            Studio / Overview
           </p>
 
-          <h1 className="fw-bold">
-            Admin Dashboard
-          </h1>
-        </div>
+          <div className="admin-intro-row">
+            <div>
+              <h1 className="admin-title">
+                Admin Console
+              </h1>
 
-        <button
-          className="btn btn-outline-dark"
-          onClick={logout}
-        >
-          Logout
-        </button>
+              <p className="admin-subtitle">
+                Studio Console / Project Management
+              </p>
+            </div>
+
+            <div className="admin-date">
+              {new Date().toLocaleDateString("en-IN", {
+                day: "2-digit",
+                month: "long",
+                year: "numeric",
+              })}
+            </div>
+          </div>
+        </section>
+
+        <section className="admin-stats">
+          {[
+            ["01", "Project inquiries", total],
+            ["02", "New", newCount],
+            ["03", "In conversation", contacted],
+            ["04", "Completed", completed],
+          ].map(([number, label, value]) => (
+            <div className="admin-stat" key={number}>
+              <div className="admin-stat-top">
+                <span className="admin-stat-number">
+                  {number}
+                </span>
+
+                <span className="admin-stat-value">
+                  {value}
+                </span>
+              </div>
+
+              <p className="admin-stat-label">
+                {label}
+              </p>
+            </div>
+          ))}
+        </section>
+
+        <section className="admin-section">
+          <div className="admin-section-heading">
+            <div>
+              <p className="admin-eyebrow">
+                Client pipeline
+              </p>
+
+              <h2 className="admin-section-title">
+                Recent inquiries
+              </h2>
+            </div>
+
+            <span className="admin-records">
+              {total.toString().padStart(2, "0")} records
+            </span>
+          </div>
+
+          <div className="admin-table-wrap">
+            {loading ? (
+              <div className="admin-empty">
+                Loading inquiries...
+              </div>
+            ) : inquiries.length === 0 ? (
+              <div className="admin-empty">
+                <p>No inquiries yet.</p>
+                <p>
+                  New project requests will appear here.
+                </p>
+              </div>
+            ) : (
+              <div className="admin-table-scroll">
+                <table className="admin-table">
+                  <thead>
+                    <tr>
+                      <th>Client</th>
+                      <th>Company</th>
+                      <th>Project</th>
+                      <th>Budget</th>
+                      <th>Status</th>
+                    </tr>
+                  </thead>
+
+                  <tbody>
+                    {inquiries.map((inquiry) => (
+                      <tr key={inquiry.id}>
+                        <td>
+                          <div className="admin-client">
+                            {inquiry.name}
+                          </div>
+
+                          <div className="admin-email">
+                            {inquiry.email}
+                          </div>
+                        </td>
+
+                        <td>
+                          {inquiry.company || "—"}
+                        </td>
+
+                        <td>
+                          {inquiry.projectType}
+                        </td>
+
+                        <td>
+                          {inquiry.budget || "—"}
+                        </td>
+
+                        <td>
+                          <select
+                            value={inquiry.status}
+                            onChange={(e) =>
+                              updateStatus(
+                                inquiry.id,
+                                e.target.value
+                              )
+                            }
+                            className={`admin-status ${getStatusClass(
+                              inquiry.status
+                            )}`}
+                          >
+                            {statuses.map((status) => (
+                              <option
+                                key={status}
+                                value={status}
+                              >
+                                {status.replace("_", " ")}
+                              </option>
+                            ))}
+                          </select>
+                        </td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
+            )}
+          </div>
+        </section>
+
+        <footer className="admin-footer">
+          Siteique / Private Studio Console
+        </footer>
       </div>
-
-      {/* Stats */}
-
-      <div className="row g-4 mb-5">
-
-        <div className="col-md-3">
-          <div className="service-card p-4">
-            <p className="text-muted">
-              Total Inquiries
-            </p>
-
-            <h2 className="fw-bold">
-              {total}
-            </h2>
-          </div>
-        </div>
-
-        <div className="col-md-3">
-          <div className="service-card p-4">
-            <p className="text-muted">
-              New
-            </p>
-
-            <h2 className="fw-bold">
-              {newCount}
-            </h2>
-          </div>
-        </div>
-
-        <div className="col-md-3">
-          <div className="service-card p-4">
-            <p className="text-muted">
-              Contacted
-            </p>
-
-            <h2 className="fw-bold">
-              {contactedCount}
-            </h2>
-          </div>
-        </div>
-
-        <div className="col-md-3">
-          <div className="service-card p-4">
-            <p className="text-muted">
-              Completed
-            </p>
-
-            <h2 className="fw-bold">
-              {completedCount}
-            </h2>
-          </div>
-        </div>
-
-      </div>
-
-      {/* Inquiries */}
-
-      <div className="service-card p-4">
-
-        <h3 className="fw-bold mb-4">
-          Project Inquiries
-        </h3>
-
-        {inquiries.length === 0 ? (
-          <p className="text-muted">
-            No inquiries yet.
-          </p>
-        ) : (
-          <div className="table-responsive">
-
-            <table className="table align-middle">
-
-              <thead>
-                <tr>
-                  <th>Client</th>
-                  <th>Company</th>
-                  <th>Project</th>
-                  <th>Budget</th>
-                  <th>Status</th>
-                </tr>
-              </thead>
-
-              <tbody>
-
-                {inquiries.map((inquiry) => (
-                  <tr key={inquiry.id}>
-
-                    <td>
-                      <strong>
-                        {inquiry.name}
-                      </strong>
-
-                      <br />
-
-                      <small className="text-muted">
-                        {inquiry.email}
-                      </small>
-                    </td>
-
-                    <td>
-                      {inquiry.company || "—"}
-                    </td>
-
-                    <td>
-                      {inquiry.projectType}
-                    </td>
-
-                    <td>
-                      {inquiry.budget || "—"}
-                    </td>
-
-                    <td>
-                      <select
-                        className="form-select"
-                        value={inquiry.status}
-                        onChange={(e) =>
-                          updateStatus(
-                            inquiry.id,
-                            e.target.value
-                          )
-                        }
-                      >
-                        <option value="NEW">
-                          NEW
-                        </option>
-
-                        <option value="CONTACTED">
-                          CONTACTED
-                        </option>
-
-                        <option value="IN_PROGRESS">
-                          IN PROGRESS
-                        </option>
-
-                        <option value="COMPLETED">
-                          COMPLETED
-                        </option>
-                      </select>
-                    </td>
-
-                  </tr>
-                ))}
-
-              </tbody>
-
-            </table>
-
-          </div>
-        )}
-
-      </div>
-    </div>
+    </main>
   );
 }
-
-export default AdminDashboard;
