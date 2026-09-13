@@ -1,5 +1,5 @@
 /* =========================================
-   SITEIQUE — PRIVATE STUDIO
+   SITEIQUE — ADMIN LOGIN
    ========================================= */
 
 .admin-page {
@@ -7,11 +7,37 @@
   background: #f8fafc;
   color: #0f172a;
   padding: 32px 5%;
+  position: relative;
+  overflow: hidden;
+}
+
+.admin-page::before {
+  content: "";
+  position: absolute;
+  width: 520px;
+  height: 520px;
+  right: -100px;
+  top: 80px;
+  border-radius: 50%;
+  background:
+    radial-gradient(
+      circle at 35% 30%,
+      rgba(37, 99, 235, 0.38) 0%,
+      rgba(37, 99, 235, 0.20) 28%,
+      rgba(99, 102, 241, 0.12) 48%,
+      rgba(248, 250, 252, 0) 72%
+    );
+  filter: blur(8px);
+  opacity: 0.7;
+  pointer-events: none;
+  z-index: 0;
 }
 
 .admin-shell {
   max-width: 1400px;
   margin: 0 auto;
+  position: relative;
+  z-index: 1;
 }
 
 /* HEADER */
@@ -38,7 +64,7 @@
 }
 
 .admin-brand-name {
-  font-size: 14px;
+  font-size: 20px;
   font-weight: 700;
   letter-spacing: .22em;
 }
@@ -203,7 +229,7 @@
   overflow: hidden;
   border: 1px solid #dfe6ee;
   border-radius: 4px;
-  background: rgba(255,255,255,.55);
+  background: rgba(255, 255, 255, .55);
 }
 
 .admin-table-scroll {
@@ -325,19 +351,46 @@
   min-height: calc(100vh - 64px);
   display: flex;
   flex-direction: column;
+  position: relative;
+  overflow: hidden;
 }
 
 .admin-login-content {
   flex: 1;
   display: flex;
   align-items: center;
-  justify-content: center;
-  padding: 80px 20px;
+  justify-content: flex-start;
+  padding: 70px 8%;
+  position: relative;
+  z-index: 1;
+}
+
+/* SITEIQUE ORB */
+
+.admin-login-content::after {
+  content: "";
+  position: absolute;
+  width: 560px;
+  height: 560px;
+  right: 5%;
+  top: 50%;
+  transform: translateY(-50%);
+  border-radius: 50%;
+  background:
+    radial-gradient(circle at 35% 30%,
+      rgba(37, 99, 235, 0.55) 0%,
+      rgba(37, 99, 235, 0.28) 28%,
+      rgba(99, 102, 241, 0.16) 48%,
+      rgba(248, 250, 252, 0) 72%);
+  filter: blur(8px);
+  opacity: 0.9;
+  pointer-events: none;
+  z-index: -1;
 }
 
 .admin-login-box {
   width: 100%;
-  max-width: 500px;
+  max-width: 540px;
 }
 
 .admin-login-intro {
@@ -356,6 +409,7 @@
   margin-top: 22px;
   color: #64748b;
   line-height: 1.7;
+  max-width: 470px;
 }
 
 .admin-login-form {
@@ -368,6 +422,7 @@
   display: flex;
   flex-direction: column;
   gap: 9px;
+  max-width: 520px;
 }
 
 .admin-field label {
@@ -400,20 +455,22 @@
   background: #fef2f2;
   color: #b91c1c;
   font-size: 13px;
+  max-width: 520px;
 }
 
 .admin-login-button {
-  width: 100%;
-  display: flex;
+  width: 260px;
+  height: 52px;
+  display: inline-flex;
   align-items: center;
   justify-content: space-between;
   border: 0;
   border-radius: 999px;
   background: #0f172a;
   color: white;
-  padding: 17px 23px;
+  padding: 0 20px 0 22px;
   font-family: inherit;
-  font-size: 13px;
+  font-size: 12px;
   font-weight: 600;
   cursor: pointer;
   transition: all .25s ease;
@@ -432,7 +489,7 @@
 
 .admin-login-note {
   margin-top: 35px;
-  text-align: center;
+  text-align: left;
   font-size: 10px;
   color: #7184a1;
 }
@@ -488,5 +545,31 @@
   .admin-records {
     display: block;
     margin-top: 15px;
+  }
+
+  .admin-login-content {
+    padding: 60px 20px;
+    align-items: center;
+  }
+
+  .admin-login-content::after {
+    width: 360px;
+    height: 360px;
+    right: -150px;
+    top: 18%;
+    opacity: .55;
+  }
+
+  .admin-login-box {
+    max-width: 100%;
+  }
+
+  .admin-login-button {
+    width: 100%;
+    max-width: 100%;
+  }
+
+  .admin-login-note {
+    text-align: center;
   }
 }
